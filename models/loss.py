@@ -16,7 +16,7 @@ class SSLTLoss(nn.Module):
   def loss_ce(self, preds):
     bs, k, _ = preds.shape
     # Create pseudo-label: ith cluster belongs to class i [B, K]
-    tgt = torch.arange(k).unsqueeze(0).repeat(bs, 1)
+    tgt = torch.arange(k).unsqueeze(0).repeat(bs, 1).to(preds.device)
     loss_ce = F.cross_entropy(preds, tgt)
     return loss_ce
   def loss_contrast(self, preds):

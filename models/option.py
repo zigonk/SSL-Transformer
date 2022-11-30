@@ -5,6 +5,8 @@ def get_args_parser():
     parser = argparse.ArgumentParser(
         'Set self-supervised transformer', add_help=False)
     parser.add_argument('--lr', default=1e-4, type=float)
+    parser.add_argument('--lr_scheduler', type=str, default='cosine',
+                        choices=["step", "cosine"], help="learning rate scheduler")
     parser.add_argument('--batch_size', default=1, type=int)
     parser.add_argument('--weight_decay', default=1e-4, type=float)
     parser.add_argument('--epochs', default=300, type=int)

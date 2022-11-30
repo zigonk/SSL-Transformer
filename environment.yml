@@ -1,4 +1,4 @@
-name: CAMO
+name: SSLTransformer
 channels:
   - iopath
   - fvcore

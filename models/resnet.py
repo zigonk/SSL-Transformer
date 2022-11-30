@@ -149,7 +149,11 @@ class ResNet(nn.Module):
             self.relu2 = nn.ReLU(inplace=True)
             self.fc2 = nn.Linear(mid_dim, low_dim)
         elif head_type in ['pass', 'early_return', 'multi_layer']:
-            pass
+            self.reduce_dim = nn.Sequential(
+                    nn.Conv2d(mid_dim, low_dim, kernel_size=1, bias=False),
+                    nn.BatchNorm2d(low_dim),
+                    nn.ReLU(inplace=True)
+                )
         else:
             raise NotImplementedError
 
@@ -209,7 +213,8 @@ class ResNet(nn.Module):
             return c2, c3, c4, c5
 
         if self.head_type == 'early_return':
-            return c5
+            out = self.reduce_dim(c5)
+            return out
 
         if self.head_type != 'conv_head':
             c5 = self.avgpool(c5)

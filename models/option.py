@@ -24,6 +24,7 @@ def get_args_parser():
                         help='for optimizer choice.')
     
     # Training parameters
+    parser.add_argument('--pretrained-model', type=str, default="", help="pretrained model path")
     parser.add_argument('--auto_resume', action='store_true', help='auto resume from current.pth')
     parser.add_argument('--print_freq', type=int, default=100, help='print frequency')
     parser.add_argument('--save_freq', type=int, default=10, help='save frequency')

@@ -133,9 +133,9 @@ class CrossAttentionLayer(nn.Module):
                 pos: Optional[Tensor] = None,
                 query_pos: Optional[Tensor] = None):
         if self.normalize_before:
-            return self.forward_pre(tgt, memory, memory_mask, is_skip_connection,
+            return self.forward_pre(tgt, memory, is_skip_connection, memory_mask,
                                     memory_key_padding_mask, pos, query_pos)
-        return self.forward_post(tgt, memory, memory_mask, is_skip_connection,
+        return self.forward_post(tgt, memory, is_skip_connection, memory_mask,
                                  memory_key_padding_mask, pos, query_pos)
 
 

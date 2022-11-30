@@ -248,6 +248,15 @@ class SSLTransformerDecoder(nn.Module):
         # project input to smaller dimension reduce complexity
         self.input_proj = nn.Conv2d(in_channels, hidden_dim, kernel_size=1)
         weight_init.c2_xavier_fill(self.input_proj)
+    
+    def get_initial_queries(self, input_feature):
+        _, bs, _ = input_feature.size()
+        i = torch.arange(self.nqueries, device=input_feature.device)
+        # [K, C] -> [B, K, C] -> [K, B, C]
+        cluster_prototypes = self.query_feat(i)
+        cluster_prototypes = cluster_prototypes.unsqueeze(0).repeat(bs, 1)
+        cluster_prototypes = cluster_prototypes.transpose(0, 1)
+        return cluster_prototypes
 
     def forward(self, feature):
         """Compute prototype feature for clusters and prediction of prototype
@@ -261,9 +270,8 @@ class SSLTransformerDecoder(nn.Module):
         # [B, C, H, W] -> [B, C, H*W] -> [H*W, B, C]
         input_feature = self.input_proj(feature).flatten(2)
         input_feature = input_feature.permute(2, 0, 1)
-        
-        i = torch.arange(self.nqueries, device=input_feature.device)
-        cluster_prototypes = self.query_feat(i)
+
+        cluster_prototypes = self.get_initial_queries(input_feature)
         for i in range(self.num_layers):
             # attention: cross-attention first
             is_skip_connection = (i == 0) # here we prevent the model use the clusters directly for class prediction

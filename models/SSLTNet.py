@@ -10,7 +10,7 @@ class SSLTNet(nn.Module):
                  transformer_decoder: SSLTransformerDecoder,
                  criterion: SSLTLoss,) -> None:
         super().__init__()
-        self.encoder = base_encoder
+        self.backbone = base_encoder
         self.decoder = transformer_decoder
 
         # output FFNs

@@ -26,6 +26,6 @@ class SSLTLoss(nn.Module):
     losses['ce'] = self.loss_ce(preds)
     losses['contrast'] = self.loss_contrast(cluster_prototypes)
     total_loss = 0
-    for key in self.weight_dict.key():
+    for key in self.weight_dict:
       total_loss += self.weight_dict[key] * losses[key]
     return total_loss

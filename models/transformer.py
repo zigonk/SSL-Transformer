@@ -254,7 +254,7 @@ class SSLTransformerDecoder(nn.Module):
         i = torch.arange(self.nqueries, device=input_feature.device)
         # [K, C] -> [B, K, C] -> [K, B, C]
         cluster_prototypes = self.query_feat(i)
-        cluster_prototypes = cluster_prototypes.unsqueeze(0).repeat(bs, 1)
+        cluster_prototypes = cluster_prototypes.unsqueeze(0).repeat(bs, 1, 1)
         cluster_prototypes = cluster_prototypes.transpose(0, 1)
         return cluster_prototypes
 

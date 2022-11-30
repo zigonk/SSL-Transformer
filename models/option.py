@@ -7,6 +7,12 @@ def get_args_parser():
     parser.add_argument('--lr', default=1e-4, type=float)
     parser.add_argument('--lr_scheduler', type=str, default='cosine',
                         choices=["step", "cosine"], help="learning rate scheduler")
+    parser.add_argument('--warmup-epoch', type=int, default=5, help='warmup epoch')
+    parser.add_argument('--warmup-multiplier', type=int, default=100, help='warmup multiplier')
+    parser.add_argument('--lr-decay-epochs', type=int, default=[120, 160, 200], nargs='+',
+                        help='for step scheduler. where to decay lr, can be a list')
+    parser.add_argument('--lr-decay-rate', type=float, default=0.1,
+                        help='for step scheduler. decay rate for learning rate')
     parser.add_argument('--batch_size', default=1, type=int)
     parser.add_argument('--weight_decay', default=1e-4, type=float)
     parser.add_argument('--epochs', default=300, type=int)

@@ -255,7 +255,7 @@ class SSLTransformerDecoder(nn.Module):
         # [K, C] -> [B, K, C] -> [K, B, C]
         cluster_prototypes = self.query_feat(i)
         cluster_prototypes = cluster_prototypes.unsqueeze(0).repeat(bs, 1, 1)
-        cluster_prototypes = cluster_prototypes.transpose(0, 1)
+        cluster_prototypes = cluster_prototypes.permute(1, 0, 2)
         return cluster_prototypes
 
     def forward(self, feature):
@@ -294,7 +294,7 @@ class SSLTransformerDecoder(nn.Module):
         
         cluster_prototypes = self.decoder_norm(cluster_prototypes)
         # [K, B, C] -> [B, K, C]
-        cluster_prototypes = cluster_prototypes.transpose(0, 1)
+        cluster_prototypes = cluster_prototypes.permute(1, 0, 2)
 
         return cluster_prototypes
 

@@ -279,8 +279,7 @@ class SSLTransformerDecoder(nn.Module):
         # [B, h, Q] -> [B, h, Q, Q] -> [B*h, Q, Q]
         self_attn_mask = multihead_attn_mask.unsqueeze(3).repeat(1, 1, 1, self.nqueries).flatten(0, 1)
 
-        print(cross_attn_mask.shape)
-        print(self_attn_mask.shape)
+        print(meaningless_clusters)
         for i in range(self.num_layers):
             # attention: cross-attention first
             is_skip_connection = (i == 0) # here we prevent the model use the clusters directly for class prediction

@@ -15,7 +15,6 @@ class SSLTNet(nn.Module):
 
         # output FFNs
         self.class_embed = nn.Linear(args.feature_dim, args.num_queries)
-        self.softmax = nn.Softmax(dim=-1)
         self.criterion = criterion
 
     def forward(self, inputs):
@@ -30,7 +29,7 @@ class SSLTNet(nn.Module):
         """
         features = self.backbone(inputs)
         cluster_prototypes = self.decoder(features)
-        pred_logits = self.softmax(self.class_embed(cluster_prototypes))
+        pred_logits = self.class_embed(cluster_prototypes)
         print(pred_logits.size())
         if self.training:
             return self.criterion(pred_logits, features)

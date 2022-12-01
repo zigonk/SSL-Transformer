@@ -312,7 +312,7 @@ class SSLTransformerDecoder(nn.Module):
         outputs_mask = torch.einsum("bqc,bcf->bqf", decoder_output, features) # f = hw
 
         # [B, Q, HW] -> [B, Q] -> [B, Q, HW] -> [B, h, Q, HW] -> [B*h, Q, HW]
-        attn_mask = (outputs_mask.sigmoid().flatten(2) > 0.2).bool()
+        attn_mask = (outputs_mask.sigmoid().flatten(2) < 0.2).bool()
         attn_mask = attn_mask
 
         meaningless_clusters = torch.all(attn_mask, dim=2)

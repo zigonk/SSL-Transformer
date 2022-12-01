@@ -31,6 +31,7 @@ class SSLTNet(nn.Module):
         cluster_prototypes = self.decoder(features)
         pred_logits = self.class_embed(cluster_prototypes)
         print(pred_logits)
+        print(cluster_prototypes)
         if self.training:
             return self.criterion(pred_logits, features)
 

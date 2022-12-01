@@ -53,7 +53,7 @@ def build_model(encoder, initial_clusters, args):
     else:
         raise NotImplementedError
 
-    model = DistributedDataParallel(model, device_ids=[args.local_rank], broadcast_buffers=False)
+    model = DistributedDataParallel(model, device_ids=[args.local_rank], broadcast_buffers=False, find_unused_parameters=True)
 
     return model, optimizer
 

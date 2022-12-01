@@ -244,10 +244,6 @@ class SSLTransformerDecoder(nn.Module):
         # Using clusters as initial queries
         self.nqueries = nqueries
         self.query_feat = nn.Embedding.from_pretrained(clusters, freeze=False)
-
-        # project input to smaller dimension reduce complexity
-        self.input_proj = nn.Conv2d(in_channels, hidden_dim, kernel_size=1)
-        weight_init.c2_xavier_fill(self.input_proj)
     
     def get_initial_queries(self, input_feature):
         _, bs, _ = input_feature.size()
@@ -267,7 +263,7 @@ class SSLTransformerDecoder(nn.Module):
             cluster prototypes (B x nqueries x nqueries)
         """
         # [B, C, H, W] -> [B, C, H*W] -> [H*W, B, C]
-        input_feature = self.input_proj(feature).flatten(2)
+        input_feature = feature.flatten(2)
         input_feature = input_feature.permute(2, 0, 1)
 
         cluster_prototypes = self.get_initial_queries(input_feature)
@@ -279,7 +275,6 @@ class SSLTransformerDecoder(nn.Module):
         # [B, h, Q] -> [B, h, Q, Q] -> [B*h, Q, Q]
         self_attn_mask = multihead_attn_mask.unsqueeze(3).repeat(1, 1, 1, self.nqueries).flatten(0, 1)
 
-        print(meaningless_clusters)
         for i in range(self.num_layers):
             # attention: cross-attention first
             is_skip_connection = (i == 0) # here we prevent the model use the clusters directly for class prediction
@@ -307,16 +302,14 @@ class SSLTransformerDecoder(nn.Module):
         decoder_output = self.decoder_norm(output)
         decoder_output = decoder_output.transpose(0, 1) #[B, Q, C]
         features = mask_features.permute(1, 2, 0) #[B, Q, HW]
-        print(decoder_output.size())
-        print(features.size())
         outputs_mask = torch.einsum("bqc,bcf->bqf", decoder_output, features) # f = hw
 
         # [B, Q, HW] -> [B, Q] -> [B, Q, HW] -> [B, h, Q, HW] -> [B*h, Q, HW]
         attn_mask = (outputs_mask.sigmoid().flatten(2) < 0.2).bool()
-        attn_mask = attn_mask
+        attn_mask = attn_mask.detach()
 
         meaningless_clusters = torch.all(attn_mask, dim=2)
-        meaningless_clusters = meaningless_clusters
+        meaningless_clusters = meaningless_clusters.detach()
 
         return attn_mask, meaningless_clusters
 

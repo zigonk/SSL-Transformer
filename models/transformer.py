@@ -272,10 +272,12 @@ class SSLTransformerDecoder(nn.Module):
         input_feature = input_feature.permute(2, 0, 1)
 
         cluster_prototypes = self.get_initial_queries(input_feature)
+        print(f"=======================Current cluster:")
         print(cluster_prototypes)
         for i in range(self.num_layers):
             # attention: cross-attention first
             is_skip_connection = (i == 0) # here we prevent the model use the clusters directly for class prediction
+            
             cluster_prototypes = self.transformer_cross_attention_layers[i](
                 cluster_prototypes, input_feature,
                 is_skip_connection=is_skip_connection,
@@ -291,6 +293,8 @@ class SSLTransformerDecoder(nn.Module):
             cluster_prototypes = self.transformer_ffn_layers[i](
                 cluster_prototypes
             )
+            print(f"=======================Clusters after step {i}:")
+            print(cluster_prototypes)
         
         cluster_prototypes = self.decoder_norm(cluster_prototypes)
         # [K, B, C] -> [B, K, C]

@@ -254,8 +254,7 @@ class SSLTransformerDecoder(nn.Module):
         i = torch.arange(self.nqueries, device=input_feature.device)
         # [K, C] -> [B, K, C] -> [K, B, C]
         cluster_prototypes = self.query_feat(i)
-        cluster_prototypes = cluster_prototypes.unsqueeze(0).repeat(bs, 1, 1)
-        cluster_prototypes = cluster_prototypes.permute(1, 0, 2)
+        cluster_prototypes = cluster_prototypes.unsqueeze(1).repeat(1, bs, 1)
         return cluster_prototypes
 
     def forward(self, feature):
@@ -272,8 +271,14 @@ class SSLTransformerDecoder(nn.Module):
         input_feature = input_feature.permute(2, 0, 1)
 
         cluster_prototypes = self.get_initial_queries(input_feature)
-        print(f"=======================Current cluster:")
-        print(cluster_prototypes)
+        attn_mask, meaningless_clusters = self.get_attention_region(cluster_prototypes, input_feature)
+        print(meaningless_clusters)
+        # [B, Q] -> [B, h, Q]
+        multihead_attn_mask = meaningless_clusters.unsqueeze(1).repeat(1, self.num_heads, 1)
+        # [B*h, Q, HW]
+        cross_attn_mask = multihead_attn_mask.unsqueeze(2).repeat(1, 1, input_feature.size(dim=1)).flatten(0, 1)
+        # [B*h, Q, Q]
+        self_attn_mask = multihead_attn_mask.unsqueeze(2).repeat(1, 1, self.nqueries).flatten(0, 1)
         for i in range(self.num_layers):
             # attention: cross-attention first
             is_skip_connection = (i == 0) # here we prevent the model use the clusters directly for class prediction
@@ -281,26 +286,36 @@ class SSLTransformerDecoder(nn.Module):
             cluster_prototypes = self.transformer_cross_attention_layers[i](
                 cluster_prototypes, input_feature,
                 is_skip_connection=is_skip_connection,
+                memory_mask=cross_attn_mask,
                 memory_key_padding_mask=None,  # here we do not apply masking on padded region
             )
 
             cluster_prototypes = self.transformer_self_attention_layers[i](
                 cluster_prototypes, tgt_mask=None,
+                tgt_mask=self_attn_mask,
                 tgt_key_padding_mask=None,
             )
-
-            # FFN
-            cluster_prototypes = self.transformer_ffn_layers[i](
-                cluster_prototypes
-            )
-            print(f"=======================Clusters after step {i}:")
-            print(cluster_prototypes)
         
         cluster_prototypes = self.decoder_norm(cluster_prototypes)
         # [K, B, C] -> [B, K, C]
         cluster_prototypes = cluster_prototypes.permute(1, 0, 2)
 
         return cluster_prototypes
+    
+    def get_attention_region(self, output, mask_features):
+        decoder_output = self.decoder_norm(output)
+        decoder_output = decoder_output.transpose(0, 1) #[B, Q, C]
+        features = mask_features.permute(1, 2, 0) #[B, Q, HW]
+        outputs_mask = torch.einsum("bqc,bchw->bqhw", decoder_output, features)
+
+        # [B, Q, HW] -> [B, Q] -> [B, Q, HW] -> [B, h, Q, HW] -> [B*h, Q, HW]
+        attn_mask = (outputs_mask.sigmoid().flatten(2) < 0.5).bool()
+        attn_mask = attn_mask.detach()
+
+        meaningless_clusters = torch.all(attn_mask, dim=2)
+        meaningless_clusters = meaningless_clusters.detach()
+
+        return attn_mask, meaningless_clusters
 
 
 def build_transformer_decoder(initial_clusters, args):

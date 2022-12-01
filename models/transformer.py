@@ -272,13 +272,15 @@ class SSLTransformerDecoder(nn.Module):
 
         cluster_prototypes = self.get_initial_queries(input_feature)
         attn_mask, meaningless_clusters = self.get_attention_region(cluster_prototypes, input_feature)
-        print(meaningless_clusters)
         # [B, Q] -> [B, h, Q]
         multihead_attn_mask = meaningless_clusters.unsqueeze(1).repeat(1, self.num_heads, 1)
         # [B*h, Q, HW]
         cross_attn_mask = multihead_attn_mask.unsqueeze(2).repeat(1, 1, 1, input_feature.size(dim=0)).flatten(0, 1)
         # [B*h, Q, Q]
         self_attn_mask = multihead_attn_mask.unsqueeze(2).repeat(1, 1, 1, self.nqueries).flatten(0, 1)
+
+        print(cross_attn_mask)
+        print(self_attn_mask)
         for i in range(self.num_layers):
             # attention: cross-attention first
             is_skip_connection = (i == 0) # here we prevent the model use the clusters directly for class prediction
@@ -311,7 +313,7 @@ class SSLTransformerDecoder(nn.Module):
         outputs_mask = torch.einsum("bqc,bcf->bqf", decoder_output, features) # f = hw
 
         # [B, Q, HW] -> [B, Q] -> [B, Q, HW] -> [B, h, Q, HW] -> [B*h, Q, HW]
-        attn_mask = (outputs_mask.sigmoid().flatten(2) < 0.5).bool()
+        attn_mask = (outputs_mask.sigmoid().flatten(2) > 0.5).bool()
         attn_mask = attn_mask.detach()
 
         meaningless_clusters = torch.all(attn_mask, dim=2)

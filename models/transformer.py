@@ -306,6 +306,8 @@ class SSLTransformerDecoder(nn.Module):
         decoder_output = self.decoder_norm(output)
         decoder_output = decoder_output.transpose(0, 1) #[B, Q, C]
         features = mask_features.permute(1, 2, 0) #[B, Q, HW]
+        print(decoder_output.size())
+        print(features.size())
         outputs_mask = torch.einsum("bqc,bchw->bqhw", decoder_output, features)
 
         # [B, Q, HW] -> [B, Q] -> [B, Q, HW] -> [B, h, Q, HW] -> [B*h, Q, HW]

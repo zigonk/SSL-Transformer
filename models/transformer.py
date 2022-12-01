@@ -291,7 +291,7 @@ class SSLTransformerDecoder(nn.Module):
             )
 
             cluster_prototypes = self.transformer_self_attention_layers[i](
-                cluster_prototypes, tgt_mask=None,
+                cluster_prototypes,
                 tgt_mask=self_attn_mask,
                 tgt_key_padding_mask=None,
             )

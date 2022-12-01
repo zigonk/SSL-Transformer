@@ -274,10 +274,10 @@ class SSLTransformerDecoder(nn.Module):
         attn_mask, meaningless_clusters = self.get_attention_region(cluster_prototypes, input_feature)
         # [B, Q] -> [B, h, Q]
         multihead_attn_mask = meaningless_clusters.unsqueeze(1).repeat(1, self.num_heads, 1)
-        # [B*h, Q, HW]
-        cross_attn_mask = multihead_attn_mask.unsqueeze(2).repeat(1, 1, 1, input_feature.size(dim=0)).flatten(0, 1)
-        # [B*h, Q, Q]
-        self_attn_mask = multihead_attn_mask.unsqueeze(2).repeat(1, 1, 1, self.nqueries).flatten(0, 1)
+        # [B, h, Q] -> [B, h, Q, HW] -> [B*h, Q, HW]
+        cross_attn_mask = multihead_attn_mask.unsqueeze(3).repeat(1, 1, 1, input_feature.size(dim=0)).flatten(0, 1)
+        # [B, h, Q] -> [B, h, Q, Q] -> [B*h, Q, Q]
+        self_attn_mask = multihead_attn_mask.unsqueeze(3).repeat(1, 1, 1, self.nqueries).flatten(0, 1)
 
         print(cross_attn_mask.shape)
         print(self_attn_mask.shape)

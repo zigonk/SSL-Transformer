@@ -313,10 +313,10 @@ class SSLTransformerDecoder(nn.Module):
 
         # [B, Q, HW] -> [B, Q] -> [B, Q, HW] -> [B, h, Q, HW] -> [B*h, Q, HW]
         attn_mask = (outputs_mask.sigmoid().flatten(2) > 0.5).bool()
-        attn_mask = attn_mask.detach()
+        attn_mask = attn_mask
 
         meaningless_clusters = torch.all(attn_mask, dim=2)
-        meaningless_clusters = meaningless_clusters.detach()
+        meaningless_clusters = meaningless_clusters
 
         return attn_mask, meaningless_clusters
 

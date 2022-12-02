@@ -1,7 +1,7 @@
 from typing import Optional
 
 from torch import nn
-from models.transformer import SSLTransformerDecoder, build_transformer_decoder
+from models.transformer import build_decoder
 
 class SSLTNet(nn.Module):
     def __init__(self, args, base_encoder,

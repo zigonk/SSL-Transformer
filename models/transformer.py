@@ -127,7 +127,7 @@ class CrossAttentionLayer(nn.Module):
         return tgt
 
     def forward(self, tgt, memory, 
-                is_skip_connection: True,
+                is_skip_connection: False,
                 memory_mask: Optional[Tensor] = None,
                 memory_key_padding_mask: Optional[Tensor] = None,
                 pos: Optional[Tensor] = None,
@@ -282,16 +282,20 @@ class SSLTransformerDecoder(nn.Module):
             
             cluster_prototypes = self.transformer_cross_attention_layers[i](
                 cluster_prototypes, input_feature,
-                is_skip_connection=is_skip_connection,
-                memory_mask=cross_attn_mask,
+                # is_skip_connection=is_skip_connection,
+                # memory_mask=cross_attn_mask,
                 memory_key_padding_mask=None,  # here we do not apply masking on padded region
             )
 
             cluster_prototypes = self.transformer_self_attention_layers[i](
                 cluster_prototypes,
-                tgt_mask=self_attn_mask,
+                # tgt_mask=self_attn_mask,
                 tgt_key_padding_mask=None,
             )
+
+            # cluster_prototypes = self.transformer_ffn_layers[i](
+            #     cluster_prototypes
+            # )
         
         cluster_prototypes = self.decoder_norm(cluster_prototypes)
         # [K, B, C] -> [B, K, C]

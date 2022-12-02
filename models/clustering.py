@@ -105,5 +105,6 @@ def cluster(features, num_cluster):
 
     # perform the training
     clus.train(features, index)
-    return clus.centroids
+    centroids = faiss.vector_float_to_array(clus.centroids).reshape(-1, d)
+    return centroids
     

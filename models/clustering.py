@@ -51,7 +51,8 @@ def compute_features(dataloader, cluster_network, opt):
         # [B, C, H, W] -> [B, C, H*W] -> [B, H*W, C] -> [B*H*W, C]
         feature = cluster_network(input_image).flatten(2).permute(0, 2, 1).flatten(0, 1).detach().cpu().numpy()
         feature_coll.append(feature.astype('float32'))
-
+        
+    cluster_network.train()
     return np.vstack(feature_coll)
 
 
@@ -85,11 +86,25 @@ def feature_preprocessing(features, pca_dim=256):
 
 
 def cluster(features, num_cluster):
-    n_samples, dim = features.shape
+    _, d = features.shape
+    # faiss implementation of k-means
+    clus = faiss.Clustering(d, num_cluster)
 
-    niter = 20
+    # Change faiss seed at each k-means so that the randomly picked
+    # initialization centroids do not correspond to the same feature ids
+    # from an epoch to another.
+    clus.seed = np.random.randint(1234)
 
-    kmeans = faiss.Kmeans(dim, num_cluster, niter=niter, verbose=True, gpu=True)
-    kmeans.train(features)
+    clus.niter = 20
+    clus.max_points_per_centroid = 10000000
+    res = faiss.StandardGpuResources()
+    faiss.normalize_L2(features)
+    flat_config = faiss.GpuIndexFlatConfig()
+    flat_config.useFloat16 = False
+    flat_config.device = 0
+    index = faiss.IndexFlatIP(res, d, flat_config)
 
-    return kmeans.centroids
+    # perform the training
+    clus.train(features, index)
+    return clus.centroids
+    

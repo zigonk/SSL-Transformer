@@ -293,9 +293,9 @@ class SSLTransformerDecoder(nn.Module):
                 tgt_key_padding_mask=None,
             )
 
-            # cluster_prototypes = self.transformer_ffn_layers[i](
-            #     cluster_prototypes
-            # )
+            cluster_prototypes = self.transformer_ffn_layers[i](
+                cluster_prototypes
+            )
         
         cluster_prototypes = self.decoder_norm(cluster_prototypes)
         # [K, B, C] -> [B, K, C]

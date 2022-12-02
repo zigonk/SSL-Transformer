@@ -1,17 +1,15 @@
 from typing import Optional
 
 from torch import nn
-from models.transformer import SSLTransformerDecoder
-from models.loss import SSLTLoss
-
+from models.transformer import SSLTransformerDecoder, build_transformer_decoder
 
 class SSLTNet(nn.Module):
     def __init__(self, args, base_encoder,
-                 transformer_decoder: SSLTransformerDecoder,
-                 criterion: SSLTLoss,) -> None:
+                 initial_clusters,
+                 criterion) -> None:
         super().__init__()
         self.backbone = base_encoder
-        self.decoder = transformer_decoder
+        self.decoder = build_decoder(initial_clusters, args)
 
         # output FFNs
         self.class_embed = nn.Linear(args.feature_dim, args.num_queries)

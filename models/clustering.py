@@ -51,8 +51,7 @@ def compute_features(dataloader, cluster_network, opt):
         # [B, C, H, W] -> [B, C, H*W] -> [B, H*W, C] -> [B*H*W, C]
         feature = cluster_network(input_image).flatten(2).permute(0, 2, 1).flatten(0, 1).detach().cpu().numpy()
         feature_coll.append(feature.astype('float32'))
-        
-    cluster_network.train()
+
     return np.vstack(feature_coll)
 
 
@@ -102,7 +101,7 @@ def cluster(features, num_cluster):
     flat_config = faiss.GpuIndexFlatConfig()
     flat_config.useFloat16 = False
     flat_config.device = 0
-    index = faiss.IndexFlatIP(res, d, flat_config)
+    index = faiss.GpuIndexFlatIP(res, d, flat_config)
 
     # perform the training
     clus.train(features, index)

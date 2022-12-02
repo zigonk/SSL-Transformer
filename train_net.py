@@ -45,7 +45,7 @@ def build_model(encoder, initial_clusters, args):
     if args.optimizer == 'sgd':
         optimizer = torch.optim.SGD(
             model.parameters(),
-            lr=args.batch_size * dist.get_world_size() / 16 * args.lr,
+            lr= dist.get_world_size() * args.lr,
             momentum=args.momentum,
             weight_decay=args.weight_decay,)
     else:

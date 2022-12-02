@@ -2,6 +2,7 @@
 # Modified by Bowen Cheng from: https://github.com/facebookresearch/detr/blob/master/models/detr.py
 import torch
 from torch import nn, Tensor
+from torch.nn import functional as F
 
 from models.modules.attention_layers import CrossAttentionLayer, FFNLayer, SelfAttentionLayer
 
@@ -100,7 +101,7 @@ class SSLTransformerDecoder(nn.Module):
 
             cluster_prototypes = self.transformer_cross_attention_layers[i](
                 cluster_prototypes, input_feature,
-                # is_skip_connection=is_skip_connection,
+                is_skip_connection=is_skip_connection,
                 # memory_mask=cross_attn_mask,
                 memory_key_padding_mask=None,  # here we do not apply masking on padded region
             )

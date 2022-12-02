@@ -268,7 +268,7 @@ class SSLTransformerDecoder(nn.Module):
 
         cluster_prototypes = self.get_initial_queries(input_feature)
         attn_mask, meaningless_clusters = self.get_attention_region(cluster_prototypes, input_feature)
-        print(meaningless_clusters)
+    
         # [B, Q] -> [B, h, Q]
         multihead_attn_mask = meaningless_clusters.unsqueeze(1).repeat(1, self.num_heads, 1)
         # [B, h, Q] -> [B, h, Q, HW] -> [B*h, Q, HW]

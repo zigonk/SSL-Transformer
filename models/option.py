@@ -20,7 +20,7 @@ def get_args_parser():
     parser.add_argument('--clip_max_norm', default=0.1, type=float,
                         help='gradient clipping max norm')
     parser.add_argument('--momentum', type=float, default=0.9, help='momentum for SGD')
-    parser.add_argument('--optimizer', type=str, choices=['sgd', 'lars'], default='sgd',
+    parser.add_argument('--optimizer', type=str, choices=['sgd', 'adam'], default='sgd',
                         help='for optimizer choice.')
     
     # Training parameters

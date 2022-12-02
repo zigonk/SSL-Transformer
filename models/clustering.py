@@ -29,7 +29,6 @@ def compute_clusters(dataloader, cluster_network, opt):
 def generate_cluster_labels(dataloader, cluster_network, opt):
     features = compute_features(dataloader, cluster_network, opt)
     image_clusters = cluster(features, opt.num_queries)
-    print(image_clusters)
     return image_clusters
 
 

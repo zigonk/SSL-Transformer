@@ -1,3 +1,8 @@
+from typing import Optional
+from torch import nn, Tensor
+
+from torch.nn import functional as F
+
 class SelfAttentionLayer(nn.Module):
 
     def __init__(self, d_model, nhead, dropout=0.0,

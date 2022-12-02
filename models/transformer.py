@@ -1,11 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates.
 # Modified by Bowen Cheng from: https://github.com/facebookresearch/detr/blob/master/models/detr.py
-import fvcore.nn.weight_init as weight_init
-from typing import Optional
-
 import torch
 from torch import nn, Tensor
-from torch.nn import functional as F
 
 from models.modules.attention_layers import CrossAttentionLayer, FFNLayer, SelfAttentionLayer
 

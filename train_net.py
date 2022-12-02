@@ -48,8 +48,11 @@ def build_model(encoder, initial_clusters, args):
             lr= dist.get_world_size() * args.lr,
             momentum=args.momentum,
             weight_decay=args.weight_decay,)
-    else:
-        raise NotImplementedError
+    elif args.optimizer == 'adam':
+        optimizer = torch.optim.Adam(
+            model.parameters(),
+            lr= dist.get_world_size() * args.lr,
+            weight_decay=args.weight_decay,)
 
     model = DistributedDataParallel(model, device_ids=[args.local_rank], broadcast_buffers=False, find_unused_parameters=True)
 

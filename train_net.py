@@ -20,7 +20,6 @@ from models.clustering import compute_clusters
 from models.logger import setup_logger
 from models.loss import SSLTLoss
 from models.option import get_args_parser
-from models.transformer import build_transformer_decoder
 from models.util import AverageMeter
 from models.lr_scheduler import get_scheduler
 

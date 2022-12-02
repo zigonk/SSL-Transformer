@@ -127,7 +127,7 @@ class CrossAttentionLayer(nn.Module):
         return tgt
 
     def forward(self, tgt, memory, 
-                is_skip_connection: False,
+                is_skip_connection: Optional[bool] = False,
                 memory_mask: Optional[Tensor] = None,
                 memory_key_padding_mask: Optional[Tensor] = None,
                 pos: Optional[Tensor] = None,

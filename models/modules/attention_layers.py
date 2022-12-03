@@ -90,10 +90,10 @@ class CrossAttentionLayer(nn.Module):
                      memory_key_padding_mask: Optional[Tensor] = None,
                      pos: Optional[Tensor] = None,
                      query_pos: Optional[Tensor] = None):
-        tgt2 = self.multihead_attn(query=self.with_pos_embed(tgt, query_pos),
+        tgt2, attn_weights = self.multihead_attn(query=self.with_pos_embed(tgt, query_pos),
                                    key=self.with_pos_embed(memory, pos),
                                    value=memory, attn_mask=memory_mask,
-                                   key_padding_mask=memory_key_padding_mask)[0]
+                                   key_padding_mask=memory_key_padding_mask)
         if (is_skip_connection):
             tgt = tgt + self.dropout(tgt2)
         else:
@@ -101,7 +101,7 @@ class CrossAttentionLayer(nn.Module):
 
         tgt = self.norm(tgt)
 
-        return tgt
+        return tgt, attn_weights
 
     def forward_pre(self, tgt, memory, is_skip_connection,
                     memory_mask: Optional[Tensor] = None,
@@ -109,19 +109,19 @@ class CrossAttentionLayer(nn.Module):
                     pos: Optional[Tensor] = None,
                     query_pos: Optional[Tensor] = None):
         tgt2 = self.norm(tgt)
-        tgt2 = self.multihead_attn(query=self.with_pos_embed(tgt2, query_pos),
+        tgt2, attn_weights = self.multihead_attn(query=self.with_pos_embed(tgt2, query_pos),
                                    key=self.with_pos_embed(memory, pos),
                                    value=memory, attn_mask=memory_mask,
-                                   key_padding_mask=memory_key_padding_mask)[0]
+                                   key_padding_mask=memory_key_padding_mask)
         if (is_skip_connection):
             tgt = tgt + self.dropout(tgt2)
         else:
             tgt = self.dropout(tgt2)    
 
-        return tgt
+        return tgt, attn_weights
 
     def forward(self, tgt, memory, 
-                is_skip_connection: Optional[bool] = False,
+                is_skip_connection: Optional[bool] = True,
                 memory_mask: Optional[Tensor] = None,
                 memory_key_padding_mask: Optional[Tensor] = None,
                 pos: Optional[Tensor] = None,

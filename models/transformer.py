@@ -16,7 +16,8 @@ class SSLTransformerDecoder(nn.Module):
                  dim_feedforward: int,
                  dec_layers: int,
                  pre_norm: bool,
-                 clusters: Tensor) -> None:
+                 clusters: Tensor,
+                 verbose: bool) -> None:
         super().__init__()
 
         # define Transformer decoder here
@@ -25,6 +26,7 @@ class SSLTransformerDecoder(nn.Module):
         self.transformer_self_attention_layers = nn.ModuleList()
         self.transformer_cross_attention_layers = nn.ModuleList()
         self.transformer_ffn_layers = nn.ModuleList()
+        self.verbose = verbose
 
         for _ in range(self.num_layers):
             self.transformer_self_attention_layers.append(
@@ -83,7 +85,7 @@ class SSLTransformerDecoder(nn.Module):
         cluster_prototypes = self.get_initial_queries(input_feature)
         attn_mask, meaningless_clusters = self.get_attention_region(
             cluster_prototypes, input_feature)
-
+        
         # [B, Q] -> [B, h, Q]
         multihead_attn_mask = meaningless_clusters.unsqueeze(
             1).repeat(1, self.num_heads, 1)
@@ -99,13 +101,12 @@ class SSLTransformerDecoder(nn.Module):
             # here we prevent the model use the clusters directly for class prediction
             is_skip_connection = (i == 0)
 
-            cluster_prototypes = self.transformer_cross_attention_layers[i](
+            cluster_prototypes, attn_weights = self.transformer_cross_attention_layers[i](
                 cluster_prototypes, input_feature,
                 is_skip_connection=is_skip_connection,
                 # memory_mask=cross_attn_mask,
                 memory_key_padding_mask=None,  # here we do not apply masking on padded region
             )
-
             cluster_prototypes = self.transformer_self_attention_layers[i](
                 cluster_prototypes,
                 # tgt_mask=self_attn_mask,
@@ -115,6 +116,9 @@ class SSLTransformerDecoder(nn.Module):
             cluster_prototypes = self.transformer_ffn_layers[i](
                 cluster_prototypes
             )
+            # Debug attention weight
+            if self.verbose:
+                print(attn_weights)
 
         cluster_prototypes = self.decoder_norm(cluster_prototypes)
         # [K, B, C] -> [B, K, C]

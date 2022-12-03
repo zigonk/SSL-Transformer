@@ -150,11 +150,14 @@ class SSLTransformerDecoder(nn.Module):
 class CrossAttentionDecoder(nn.Module):
     def __init__(self,
                  nqueries,
-                 initial_clusters) -> None:
+                 clusters) -> None:
         super().__init__()
         self.nqueries = nqueries
-        self.query_feat = nn.Embedding.from_pretrained(
-            initial_clusters, freeze=False)
+        if (clusters is not None):
+            self.query_feat = nn.Embedding.from_pretrained(
+                clusters, freeze=False)
+        else:
+            self.query_feat = nn.Embedding(nqueries, hidden_dim)
 
     def get_initial_queries(self, input_features):
         bs = input_features.size(dim = 0)
@@ -200,4 +203,4 @@ def build_decoder(initial_clusters, args):
                                      verbose=args.verbose)
     if (args.dec_type == 'cross-attn'):
         return CrossAttentionDecoder(nqueries=args.num_queries,
-                                     initial_clusters=initial_clusters)
+                                     clusters=initial_clusters)

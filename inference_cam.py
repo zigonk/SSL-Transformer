@@ -66,7 +66,7 @@ def inference(model, dataloader, args):
     for i, input_image in enumerate(iterator):
         input_images = input_image.to(opt.device)
         out = model(input_images)
-        CAM_batch = out['cam'] 
+        CAM_batch = out['cam'].cpu().detach().numpy()
         
         q = args.num_queries
         nrows = math.ceil(math.sqrt(q + 1)) 

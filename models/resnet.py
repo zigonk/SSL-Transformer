@@ -213,8 +213,8 @@ class ResNet(nn.Module):
             return c2, c3, c4, c5
 
         if self.head_type == 'early_return':
-            out = self.reduce_dim(c5)
-            return out
+            # out = self.reduce_dim(c5)
+            return c5
 
         if self.head_type != 'conv_head':
             c5 = self.avgpool(c5)

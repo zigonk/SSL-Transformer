@@ -40,7 +40,7 @@ def build_model(encoder, initial_clusters, args):
         'contrast': args.weight_contrast
     }
     criterion = SSLTLoss(args.num_queries, weight_dict)
-    model = SSLTNet(args, encoder, initial_clusters, criterion).cuda()
+    model = SSLTNet(args, encoder, criterion, initial_clusters).cuda()
 
     if args.optimizer == 'sgd':
         optimizer = torch.optim.SGD(

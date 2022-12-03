@@ -1,11 +1,12 @@
 from typing import Optional
 
 from torch import nn, Tensor
+from models.loss import SSLTLoss
 from models.transformer import build_decoder
 
 class SSLTNet(nn.Module):
     def __init__(self, args, base_encoder,
-                criterion,
+                criterion: Optional[SSLTLoss] = None,
                  initial_clusters: Optional[Tensor] = None) -> None:
         super().__init__()
         self.backbone = base_encoder

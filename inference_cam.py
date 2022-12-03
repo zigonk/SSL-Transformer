@@ -10,10 +10,13 @@ import torch
 import torch.distributed as dist
 from torch.backends import cudnn
 from torch.nn.parallel import DistributedDataParallel
+from torchvision import transforms
 from torch.utils.data.distributed import DistributedSampler
 
 from torch.utils.tensorboard import SummaryWriter
 from datasets import get_loader
+from datasets.dataset import pil_loader
+from datasets.transform import get_transform
 
 from models import resnet
 from models.SSLTNet import SSLTNet
@@ -58,13 +61,19 @@ def load_pretrained(model, pretrained_model):
 
 def inference(model, dataloader, args):
     model.eval()
-    dataloader.dataset.random_sample = False
-
-    iterator = tqdm(dataloader, position=1)
+    
+    data_list = os.listdir(args.data_dir)
+    iterator = tqdm(data_list, position=1)
     iterator.set_description('Generate Cluster Attention Map...')
     os.makedirs(f"{args.output_dir}/visualize_cam/", exist_ok=True)
     plt.figure()
-    for i, input_image in enumerate(iterator):
+
+    transforms = get_transform('val', args.crop) 
+    im_loader = pil_loader
+    for i, img_path in enumerate(iterator):
+        img_path = os.path.join(args.data_dir, img_path)
+        img = im_loader(img_path)
+        input_image = transforms(input_image).unsqueeze(0)
         input_images = input_image.to(opt.device)
         out = model(input_images)
         CAM_batch = out['cam'].cpu().detach().numpy()

@@ -157,7 +157,7 @@ class CrossAttentionDecoder(nn.Module):
             initial_clusters, freeze=False)
 
     def get_initial_queries(self, input_feature):
-        _, bs, _ = input_feature.size()
+        bs = input_feature.size(dim=0)
         i = torch.arange(self.nqueries, device=input_feature.device)
         # [K, C] -> [B, K, C]
         cluster_prototypes = self.query_feat(i)

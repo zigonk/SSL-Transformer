@@ -62,6 +62,7 @@ def inference(model, dataloader, args):
 
     iterator = tqdm(dataloader, position=1)
     iterator.set_description('Generate Cluster Attention Map...')
+    os.makedirs(f"{args.output_dir}/visualize_cam/", exist_ok=True)
     plt.figure()
     for i, input_image in enumerate(iterator):
         input_images = input_image.to(opt.device)

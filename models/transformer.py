@@ -149,6 +149,7 @@ class SSLTransformerDecoder(nn.Module):
 
 class CrossAttentionDecoder(nn.Module):
     def __init__(self,
+                 hidden_dim,
                  nqueries,
                  clusters) -> None:
         super().__init__()
@@ -160,7 +161,7 @@ class CrossAttentionDecoder(nn.Module):
             self.query_feat = nn.Embedding(nqueries, hidden_dim)
 
     def get_initial_queries(self, input_features):
-        bs = input_features.size(dim = 0)
+        bs = input_features.size(dim=0)
         i = torch.arange(self.nqueries, device=input_features.device)
         # [K, C] -> [B, K, C]
         cluster_prototypes = F.normalize(self.query_feat(i))
@@ -173,16 +174,16 @@ class CrossAttentionDecoder(nn.Module):
         cluster_prototypes = self.get_initial_queries(input_features)
         outputs_mask = torch.einsum(
             "bqc,bcf->bqf", cluster_prototypes, input_features)  # f = hw
-        
+
         # Get attention on top-k value
         k = int(0.8 * input_features.size(dim=2))
-        kth_values = torch.kthvalue(outputs_mask, k = k, keepdim=True)[0].repeat(1, 1, hw)
+        kth_values = torch.kthvalue(outputs_mask, k=k, keepdim=True)[
+            0].repeat(1, 1, hw)
         attn_mask = ((outputs_mask - kth_values) < 0).bool()
-        new_attn_mask = torch.zeros_like(attn_mask,dtype=torch.float)
+        new_attn_mask = torch.zeros_like(attn_mask, dtype=torch.float)
         new_attn_mask.masked_fill_(attn_mask,  float("-inf"))
         attn_mask = new_attn_mask
 
-        
         outputs_mask = F.softmax(outputs_mask + attn_mask, dim=2)
 
         updated_cluster_prototypes = torch.einsum(
@@ -202,5 +203,6 @@ def build_decoder(initial_clusters, args):
                                      clusters=initial_clusters,
                                      verbose=args.verbose)
     if (args.dec_type == 'cross-attn'):
-        return CrossAttentionDecoder(nqueries=args.num_queries,
+        return CrossAttentionDecoder(hidden_dim=args.feature_dim,
+                                     nqueries=args.num_queries,
                                      clusters=initial_clusters)

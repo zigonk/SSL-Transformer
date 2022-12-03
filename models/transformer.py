@@ -176,7 +176,7 @@ class CrossAttentionDecoder(nn.Module):
             "bqc,bcf->bqf", cluster_prototypes, input_features)  # f = hw
 
         # Get attention on top-k value
-        k = int(k * input_features.size(dim=2))
+        k = int(k * input_features.size(dim=2)) + 1
         kth_values = torch.kthvalue(outputs_mask, k=k, keepdim=True)[
             0].repeat(1, 1, hw)
         attn_mask = ((outputs_mask - kth_values) < 0).bool()

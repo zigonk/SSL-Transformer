@@ -171,11 +171,12 @@ class CrossAttentionDecoder(nn.Module):
             "bqc,bcf->bqf", cluster_prototypes, input_features)  # f = hw
         attn_mask = (F.sigmoid(outputs_mask) < 0.5).bool()
         attn_softmax_mask = -float('inf') * attn_mask
+        print(attn_softmax_mask)
         outputs_mask = F.softmax(outputs_mask + attn_softmax_mask, dim=2)
         
         pmax = outputs_mask.max(dim=2)
         print(pmax)
-        
+
         updated_cluster_prototypes = torch.einsum(
             "bqf,bcf->bqc", outputs_mask, input_features)
         return updated_cluster_prototypes

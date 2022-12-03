@@ -61,7 +61,7 @@ def inference(model, dataloader, args):
     dataloader.dataset.random_sample = False
 
     iterator = tqdm(dataloader, position=1)
-    iterator.set_description('Computing features & Clustering... ')
+    iterator.set_description('Generate Cluster Attention Map...')
     plt.figure()
     for i, input_image in enumerate(iterator):
         input_images = input_image.to(opt.device)

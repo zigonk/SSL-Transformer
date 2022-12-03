@@ -59,7 +59,7 @@ def load_pretrained(model, pretrained_model):
         f"==> loaded checkpoint '{pretrained_model}' (epoch {ckpt['epoch']})")
 
 
-def inference(model, dataloader, args):
+def inference(model, args):
     model.eval()
     
     data_list = os.listdir(args.data_dir)
@@ -97,11 +97,6 @@ def inference(model, dataloader, args):
             plt.savefig(f"{args.output_dir}/visualize_cam/{i * args.batch_size + j:05d}.jpg")
             
 def main(args):
-    val_loader = get_loader(
-        args.aug, args,
-        prefix='val')
-    args.num_instances = len(val_loader.dataset)
-    logger.info(f"length of training dataset: {args.num_instances}")
 
     # Build encoder
     encoder = resnet.__dict__[args.backbone](
@@ -117,7 +112,7 @@ def main(args):
     assert os.path.isfile(args.pretrained_model)
     load_pretrained(model, args.pretrained_model)
     model.eval()
-    inference(model, val_loader, args)
+    inference(model, args)
 
 
 if __name__ == '__main__':

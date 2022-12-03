@@ -85,10 +85,7 @@ def inference(model, args):
         if (nrows * ncols < q + 1): nrows += 1
         plt.clf()
         for j, cam in enumerate(CAM_batch):
-            img = input_images[j].permute(1, 2, 0).cpu().detach().numpy()
             plt.subplot(nrows, ncols, 1)
-            print(img.max())
-            print(img.min())
             plt.imshow(img)
             for idx, am in enumerate(cam):
                 plt.subplot(nrows, ncols, idx + 2)

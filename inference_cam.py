@@ -65,15 +65,10 @@ def inference(model, dataloader, args):
     plt.figure()
     for i, input_image in enumerate(iterator):
         input_images = input_image.to(opt.device)
-        # [B, C, H, W]
-        img_feat = model.backbone(input_images)
-        out = model(input_image)
-        # [B, Q, C]
-        cluster_prototypes = out['cluster_prototypes'] 
-        bs, q, _ = cluster_prototypes.size()
-        # calculate cluster attention map
-        CAM_batch = torch.einsum('bqc,bchw->bqhw', cluster_prototypes, img_feat)
+        out = model(input_images)
+        CAM_batch = out['cam'] 
         
+        q = args.num_queries
         nrows = math.ceil(math.sqrt(q + 1)) 
         ncols = int(math.sqrt(q + 1))
 

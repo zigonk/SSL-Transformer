@@ -136,8 +136,8 @@ class SSLTransformerDecoder(nn.Module):
         outputs_mask = torch.einsum(
             "bqc,bcf->bqf", decoder_output, features)  # f = hw
 
-        # [B, Q, HW] -> [B, Q] -> [B, Q, HW] -> [B, h, Q, HW] -> [B*h, Q, HW]
-        attn_mask = (outputs_mask.sigmoid().flatten(2) < 0.5).bool()
+        # [B, Q, HW] -> [B, Q]
+        attn_mask = (outputs_mask.sigmoid() < 0.5).bool()
         attn_mask = attn_mask
 
         meaningless_clusters = torch.all(attn_mask, dim=2)
@@ -146,7 +146,7 @@ class SSLTransformerDecoder(nn.Module):
         return attn_mask, meaningless_clusters
 
 
-class AttentionDecoder(nn.Module):
+class CrossAttentionDecoder(nn.Module):
     def __init__(self,
                  nqueries,
                  initial_clusters) -> None:
@@ -154,6 +154,7 @@ class AttentionDecoder(nn.Module):
         self.nqueries = nqueries
         self.query_feat = nn.Embedding.from_pretrained(
             initial_clusters, freeze=False)
+    
     def get_initial_queries(self, input_feature):
         _, bs, _ = input_feature.size()
         i = torch.arange(self.nqueries, device=input_feature.device)
@@ -163,11 +164,17 @@ class AttentionDecoder(nn.Module):
         return cluster_prototypes
 
     def forward(self, input_features):
-        pass
+        cluster_prototypes = self.get_initial_queries()
+        input_features = F.normalize(input_features).flatten(2)
+        outputs_mask = torch.einsum(
+            "bqc,bcf->bqf", cluster_prototypes, input_features)  # f = hw
+        outputs_mask = F.softmax(outputs_mask, dim=2)
 
+        updated_cluster_prototypes = torch.einsum("bqf,bcf->bqc", outputs_mask, input_features)
+        return updated_cluster_prototypes
 
-def build_decoder(initial_clusters, args, dec_type='trans'):
-    if (dec_type == 'trans'):
+def build_decoder(initial_clusters, args):
+    if (args.dec_type == 'trans-dec'):
         return SSLTransformerDecoder(args.feature_dim,
                                      args.feature_dim,
                                      args.nheads,
@@ -177,5 +184,5 @@ def build_decoder(initial_clusters, args, dec_type='trans'):
                                      args.pre_norm,
                                      clusters=initial_clusters, 
                                      verbose=args.verbose)
-    if (dec_type == 'attn'):
-        return AttentionDecoder(clusters=initial_clusters)
+    if (args.dec_type == 'cross-attn'):
+        return CrossAttentionDecoder(clusters=initial_clusters)

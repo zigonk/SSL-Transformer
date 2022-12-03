@@ -49,6 +49,8 @@ def get_args_parser():
                         help="Name of the convolutional backbone to use")
     parser.add_argument('--feature_dim', type=int, default=256, help='feature dimension')
     parser.add_argument('--head_type', type=str, default='mlp_head', help='choose head type')
+    parser.add_argument('--dec_type', type=str, choices=['trans-dec', 'cross-attn'], default='trans-dec',
+                        help='for decoder type choice.')
 
     # * Transformer
     parser.add_argument('--dec_layers', default=6, type=int,

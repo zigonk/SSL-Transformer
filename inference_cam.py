@@ -56,7 +56,7 @@ def load_pretrained(model, pretrained_model):
         f"==> loaded checkpoint '{pretrained_model}' (epoch {ckpt['epoch']})")
 
 
-def inference(model, dataloader):
+def inference(model, dataloader, args):
     model.eval()
     dataloader.dataset.random_sample = False
 
@@ -84,7 +84,7 @@ def inference(model, dataloader):
             for idx, am in enumerate(cam):
                 plt.subplot(nrows, ncols, idx + 2)
                 plt.imshow(am)
-        plt.savefig(f"{i:05d}.jpg")
+        plt.savefig(f"{args.output_dir}/visualize_cam/{i:05d}.jpg")
             
 def main(args):
     val_loader = get_loader(
@@ -107,48 +107,7 @@ def main(args):
     assert os.path.isfile(args.pretrained_model)
     load_pretrained(model, args.pretrained_model)
     model.eval()
-
-
-def train(epoch, train_loader, model, optimizer, scheduler, args, summary_writer):
-    """
-    one epoch training
-    """
-    model.train()
-
-    batch_time = AverageMeter()
-    loss_meter = AverageMeter()
-
-    end = time.time()
-    for idx, data in enumerate(train_loader):
-        im_batch = data.cuda(non_blocking=True)
-
-        loss = model(im_batch)
-        # backward
-        optimizer.zero_grad()
-        loss.backward()
-
-        optimizer.step()
-        scheduler.step()
-
-        # update meters and print info
-        loss_meter.update(loss.item(), im_batch.size(0))
-        batch_time.update(time.time() - end)
-        end = time.time()
-
-        train_len = len(train_loader)
-        if idx % args.print_freq == 0:
-            lr = optimizer.param_groups[0]['lr']
-            logger.info(
-                f'Train: [{epoch}/{args.epochs}][{idx}/{train_len}]  '
-                f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})  '
-                f'lr {lr:.3f}  '
-                f'loss {loss_meter.val:.3f} ({loss_meter.avg:.3f})')
-
-            # tensorboard logger
-            if summary_writer is not None:
-                step = (epoch - 1) * len(train_loader) + idx
-                summary_writer.add_scalar('lr', lr, step)
-                summary_writer.add_scalar('loss', loss_meter.val, step)
+    inference(model, val_loader, args)
 
 
 if __name__ == '__main__':

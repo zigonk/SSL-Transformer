@@ -73,7 +73,7 @@ def inference(model, args):
     for i, img_path in enumerate(iterator):
         img_path = os.path.join(args.data_dir, img_path)
         img = im_loader(img_path)
-        input_image = transforms(input_image).unsqueeze(0)
+        input_image = transforms(img).unsqueeze(0)
         input_images = input_image.to(opt.device)
         out = model(input_images)
         CAM_batch = out['cam'].cpu().detach().numpy()

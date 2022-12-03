@@ -165,8 +165,8 @@ class CrossAttentionDecoder(nn.Module):
         return cluster_prototypes
 
     def forward(self, input_features):
-        cluster_prototypes = self.get_initial_queries(input_features)
         input_features = F.normalize(input_features).flatten(2)
+        cluster_prototypes = self.get_initial_queries(input_features)
         outputs_mask = torch.einsum(
             "bqc,bcf->bqf", cluster_prototypes, input_features)  # f = hw
         outputs_mask = F.softmax(outputs_mask, dim=2)

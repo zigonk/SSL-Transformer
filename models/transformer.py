@@ -168,7 +168,7 @@ class CrossAttentionDecoder(nn.Module):
         cluster_prototypes = cluster_prototypes.unsqueeze(0).repeat(bs, 1, 1)
         return cluster_prototypes
 
-    def forward(self, input_features):
+    def forward(self, input_features, k = 0.8):
         input_features = F.normalize(input_features).flatten(2)
         bs, _, hw = input_features.size()
         cluster_prototypes = self.get_initial_queries(input_features)
@@ -176,7 +176,7 @@ class CrossAttentionDecoder(nn.Module):
             "bqc,bcf->bqf", cluster_prototypes, input_features)  # f = hw
 
         # Get attention on top-k value
-        k = int(0.8 * input_features.size(dim=2))
+        k = int(k * input_features.size(dim=2))
         kth_values = torch.kthvalue(outputs_mask, k=k, keepdim=True)[
             0].repeat(1, 1, hw)
         attn_mask = ((outputs_mask - kth_values) < 0).bool()

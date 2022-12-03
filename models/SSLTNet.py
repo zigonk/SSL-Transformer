@@ -29,7 +29,11 @@ class SSLTNet(nn.Module):
             cluster_prototypes: prototype features [B x K x C]
         """
         features = self.backbone(inputs)
-        cluster_prototypes = self.decoder(features)
+        if self.training:
+            k = 0.8
+        else:
+            k = 0
+        cluster_prototypes = self.decoder(features, k)
         pred_logits = self.class_embed(cluster_prototypes)
 
         if self.training:

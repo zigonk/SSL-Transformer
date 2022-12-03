@@ -175,6 +175,7 @@ def build_decoder(initial_clusters, args, dec_type='trans'):
                                      args.dim_feedforward,
                                      args.dec_layers,
                                      args.pre_norm,
-                                     clusters=initial_clusters)
+                                     clusters=initial_clusters, 
+                                     verbose=args.verbose)
     if (dec_type == 'attn'):
         return AttentionDecoder(clusters=initial_clusters)

@@ -68,19 +68,22 @@ def inference(model, dataloader, args):
         input_images = input_image.to(opt.device)
         out = model(input_images)
         CAM_batch = out['cam'].cpu().detach().numpy()
-        
+
         q = args.num_queries
-        nrows = math.ceil(math.sqrt(q + 1)) 
+        nrows = math.ceil(math.sqrt(q + 1))
         ncols = int(math.sqrt(q + 1))
 
         if (nrows * ncols < q + 1): nrows += 1
         plt.clf()
-        plt.subplot(nrows, ncols, 1)
-        for cam in CAM_batch:
+        for j, cam in enumerate(CAM_batch):
+            img = input_images[j].permute(1, 2, 0).cpu().detach().numpy()
+            plt.subplot(nrows, ncols, 1)
+            plt.imshow(img)
             for idx, am in enumerate(cam):
                 plt.subplot(nrows, ncols, idx + 2)
+                plt.axis('off')
                 plt.imshow(am)
-        plt.savefig(f"{args.output_dir}/visualize_cam/{i:05d}.jpg")
+            plt.savefig(f"{args.output_dir}/visualize_cam/{i * args.batch_size + j:05d}.jpg")
             
 def main(args):
     val_loader = get_loader(

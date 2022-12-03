@@ -1,12 +1,12 @@
 from typing import Optional
 
-from torch import nn
+from torch import nn, Tensor
 from models.transformer import build_decoder
 
 class SSLTNet(nn.Module):
     def __init__(self, args, base_encoder,
-                 initial_clusters,
-                 criterion) -> None:
+                criterion,
+                 initial_clusters: Optional[Tensor] = None) -> None:
         super().__init__()
         self.backbone = base_encoder
         self.decoder = build_decoder(initial_clusters, args)

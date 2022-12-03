@@ -59,7 +59,10 @@ class SSLTransformerDecoder(nn.Module):
 
         # Using clusters as initial queries
         self.nqueries = nqueries
-        self.query_feat = nn.Embedding.from_pretrained(clusters, freeze=False)
+        if (clusters is not None):
+            self.query_feat = nn.Embedding.from_pretrained(clusters, freeze=False)
+        else:
+            self.query_feat = nn.Embedding(nqueries, hidden_dim)
 
     def get_initial_queries(self, input_feature):
         _, bs, _ = input_feature.size()

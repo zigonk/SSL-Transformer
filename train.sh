@@ -1,4 +1,4 @@
-#!/bin/bash
+  GNU nano 4.8                                                                                        train.sh                                                                                                   #!/bin/bash
 
 set -e
 set -x
@@ -10,6 +10,10 @@ CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --master_port 12348  -
   train_net.py \
   --data_dir ${data_dir} \
   --output_dir ${output_dir} \
-  --batch_size 2 \
-  --num_queries 2 \
-  --epoch 1
+  --optimizer adam \
+  --batch_size 64 \
+  --num_queries 100 \
+  --dec_layers 2 \
+  --lr 0.01 \
+  --epoch 1 \
+  --dec_type cross-attn \

@@ -46,6 +46,7 @@ def compute_features(dataloader, cluster_network, opt):
     iterator.set_description('Computing features & Clustering... ')
 
     num_samples = len(dataloader)
+    print(num_samples)
     feature_coll = np.zeros((num_samples, opt.feature_dim))
     last_idx = 0
     for i, input_image in enumerate(iterator):

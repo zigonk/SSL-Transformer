@@ -11,4 +11,5 @@ CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --master_port 12348  -
   --data_dir ${data_dir} \
   --output_dir ${output_dir} \
   --batch_size 2 \
-  --num_queries 2
+  --num_queries 2 \
+  --epoch 1

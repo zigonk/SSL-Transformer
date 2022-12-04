@@ -45,12 +45,16 @@ def compute_features(dataloader, cluster_network, opt):
     iterator = tqdm(dataloader, position=1)
     iterator.set_description('Computing features & Clustering... ')
 
-    feature_coll = []
+    num_samples = len(dataloader)
+    feature_coll = np.zeros((num_samples, opt.feature_dim))
+    last_idx = 0
     for i, input_image in enumerate(iterator):
         input_image = input_image.to(opt.device)
-        # [B, C, H, W] -> [B, C, H*W] -> [B, H*W, C] -> [B*H*W, C]
+        # [1, C, H, W] -> [1, C, H*W] -> [1, H*W, C] -> [1*H*W, C]
         feature = cluster_network(input_image).flatten(2).permute(0, 2, 1).flatten(0, 1).detach().cpu().numpy()
-        feature_coll.append(feature.astype('float32'))
+        num_feat = feature.shape[0]
+        feature_coll[last_idx:last_idx + num_feat] = feature
+        last_idx += num_feat
 
     return np.vstack(feature_coll)
 
@@ -85,26 +89,14 @@ def feature_preprocessing(features, pca_dim=256):
 
 
 def cluster(features, num_cluster):
-    _, d = features.shape
+    nsample, d = features.shape
+    niter = int(20 * (nsample / (1000 * num_cluster))) # As a rule of thumb there is no consistent improvement of the k-means quantizer beyond 20 iterations and 1000 * k training points
     # faiss implementation of k-means
-    clus = faiss.Clustering(d, num_cluster)
+    clus = faiss.Kmeans(d, num_cluster, gpu=True, spherical=True, seed=42, niter = niter)
+    clus.max_points_per_centroid = 10000000
 
     # Change faiss seed at each k-means so that the randomly picked
     # initialization centroids do not correspond to the same feature ids
     # from an epoch to another.
-    clus.seed = np.random.randint(1234)
-
-    clus.niter = 20
-    clus.max_points_per_centroid = 10000000
-    res = faiss.StandardGpuResources()
-    faiss.normalize_L2(features)
-    flat_config = faiss.GpuIndexFlatConfig()
-    flat_config.useFloat16 = False
-    flat_config.device = 0
-    index = faiss.GpuIndexFlatIP(res, d, flat_config)
-
-    # perform the training
-    clus.train(features, index)
-    centroids = faiss.vector_float_to_array(clus.centroids).reshape(-1, d)
-    return centroids
-    
+    clus.train(features)
+    return clus.centroids

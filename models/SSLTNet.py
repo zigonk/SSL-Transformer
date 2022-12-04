@@ -30,7 +30,7 @@ class SSLTNet(nn.Module):
         """
         features = self.backbone(inputs)
         if self.training:
-            k = 0.8
+            k = 0.5
         else:
             k = 0
         cluster_prototypes = self.decoder(features, k)

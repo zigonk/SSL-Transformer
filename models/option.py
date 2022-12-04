@@ -47,7 +47,7 @@ def get_args_parser():
     # * Backbone
     parser.add_argument('--backbone', default='resnet50', type=str,
                         help="Name of the convolutional backbone to use")
-    parser.add_argument('--feature_dim', type=int, default=256, help='feature dimension')
+    parser.add_argument('--feature_dim', type=int, default=2048, help='feature dimension')
     parser.add_argument('--head_type', type=str, default='mlp_head', help='choose head type')
     parser.add_argument('--dec_type', type=str, choices=['trans-dec', 'cross-attn'], default='trans-dec',
                         help='for decoder type choice.')
@@ -57,7 +57,7 @@ def get_args_parser():
                         help="Number of decoding layers in the transformer")
     parser.add_argument('--dim_feedforward', default=2048, type=int,
                         help="Intermediate size of the feedforward layers in the transformer blocks")
-    parser.add_argument('--hidden_dim', default=256, type=int,
+    parser.add_argument('--hidden_dim', default=2048, type=int,
                         help="Size of the embeddings (dimension of the transformer)")
     parser.add_argument('--dropout', default=0.1, type=float,
                         help="Dropout applied in the transformer")

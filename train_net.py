@@ -114,7 +114,7 @@ def main(args):
     initial_cluster = None
 
     if not (args.auto_resume or args.resume):
-        original_loader = get_loader('val', args, prefix=train_prefix) # here we use 'val' for aug type to keep original image for clustering
+        original_loader = get_loader('val', args, prefix=train_prefix, batch_size=1) # here we use 'val' for aug type to keep original image for clustering
         initial_cluster = torch.Tensor(build_clusters(encoder, original_loader, args)).to(args.device)
     # Build model
     model, optimizer = build_model(encoder, initial_cluster, args)

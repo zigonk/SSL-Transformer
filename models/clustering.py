@@ -99,4 +99,5 @@ def cluster(features, num_cluster):
     # from an epoch to another.
     print(niter)
     clus.train(features)
+    print(clus.iteration_stats)
     return clus.centroids

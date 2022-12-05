@@ -90,12 +90,13 @@ def feature_preprocessing(features, pca_dim=256):
 
 def cluster(features, num_cluster):
     nsample, d = features.shape
-    niter = int(20 * (nsample / (1000 * num_cluster))) # As a rule of thumb there is no consistent improvement of the k-means quantizer beyond 20 iterations and 1000 * k training points
+    niter = max(25, int(20 * (nsample / (1000 * num_cluster)))) # As a rule of thumb there is no consistent improvement of the k-means quantizer beyond 20 iterations and 1000 * k training points
     # faiss implementation of k-means
     clus = faiss.Kmeans(d, num_cluster, gpu=True, spherical=True, seed=42, niter=niter, verbose=True)
 
     # Change faiss seed at each k-means so that the randomly picked
     # initialization centroids do not correspond to the same feature ids
     # from an epoch to another.
+    print(niter)
     clus.train(features)
     return clus.centroids

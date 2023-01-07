@@ -161,6 +161,8 @@ class CrossAttentionDecoder(nn.Module):
             self.query_feat = nn.Embedding(nqueries, hidden_dim)
 
     def get_topk_attention_mask(self, attn_mask, k, dim):
+        print(k)
+        print(attn_mask.size(dim=dim))
         kth_values = torch.kthvalue(attn_mask, k=k, dim=dim, keepdim=True)[0]
         repeat = attn_mask.size() // kth_values.size()
         kth_values = kth_values.repeat(repeat)
@@ -177,7 +179,7 @@ class CrossAttentionDecoder(nn.Module):
         cluster_prototypes = cluster_prototypes.unsqueeze(0).repeat(bs, 1, 1)
         return cluster_prototypes
 
-    def forward(self, input_features, k_ratio = 0.8):
+    def forward(self, input_features, k_ratio = 1):
         input_features = F.normalize(input_features).flatten(2)
 
         cluster_prototypes = self.get_initial_queries(input_features)

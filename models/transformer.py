@@ -162,9 +162,10 @@ class CrossAttentionDecoder(nn.Module):
 
     def get_topk_attention_mask(self, attn_mask, k, dim):
         print(k)
-        print(attn_mask.size(dim=dim))
+        print(attn_mask.size())
         kth_values = torch.kthvalue(attn_mask, k=k, dim=dim, keepdim=True)[0]
-        repeat = attn_mask.shape // kth_values.shape
+        repeat = [1] * len(attn_mask.shape)
+        repeat[dim] = attn_mask.size(dim=dim)
         kth_values = kth_values.repeat(repeat)
         attn_mask = ((attn_mask - kth_values) < 0).bool()
         new_attn_mask = torch.zeros_like(attn_mask, dtype=torch.float)

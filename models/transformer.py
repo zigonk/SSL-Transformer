@@ -192,7 +192,7 @@ class CrossAttentionDecoder(nn.Module):
         k = int(outputs_mask.size(dim=softmax_dim) * k_ratio)
         attn_mask = self.get_topk_attention_mask(outputs_mask, k, softmax_dim)
 
-        outputs_mask = F.softmax(outputs_mask + attn_mask, dim=2)
+        outputs_mask = F.softmax(outputs_mask + attn_mask, dim=softmax_dim)
 
         updated_cluster_prototypes = torch.einsum(
             "bqf,bcf->bqc", outputs_mask, input_features)

@@ -188,7 +188,7 @@ class CrossAttentionDecoder(nn.Module):
 
         # Get attention on top-k value
         softmax_dim = 1
-        k = int(input_features.size(dim=softmax_dim)  * k_ratio)
+        k = int(outputs_mask.size(dim=softmax_dim) * k_ratio)
         attn_mask = self.get_topk_attention_mask(outputs_mask, k, softmax_dim)
 
         outputs_mask = F.softmax(outputs_mask + attn_mask, dim=2)

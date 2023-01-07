@@ -164,7 +164,7 @@ class CrossAttentionDecoder(nn.Module):
         print(k)
         print(attn_mask.size(dim=dim))
         kth_values = torch.kthvalue(attn_mask, k=k, dim=dim, keepdim=True)[0]
-        repeat = attn_mask.size() // kth_values.size()
+        repeat = attn_mask.shape // kth_values.shape
         kth_values = kth_values.repeat(repeat)
         attn_mask = ((attn_mask - kth_values) < 0).bool()
         new_attn_mask = torch.zeros_like(attn_mask, dtype=torch.float)

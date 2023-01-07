@@ -160,6 +160,15 @@ class CrossAttentionDecoder(nn.Module):
         else:
             self.query_feat = nn.Embedding(nqueries, hidden_dim)
 
+    def filter_topk_attention_mask(self, attn_mask, k, dim):
+        kth_values = torch.kthvalue(attn_mask, k=k, dim=dim, keepdim=True)[0]
+        repeat = attn_mask.size() // kth_values.size()
+        kth_values = kth_values.repeat(repeat)
+        attn_mask = ((attn_mask - kth_values) < 0).bool()
+        new_attn_mask = torch.zeros_like(attn_mask, dtype=torch.float)
+        new_attn_mask.masked_fill_(attn_mask,  float("-inf"))
+        return new_attn_mask
+
     def get_initial_queries(self, input_features):
         bs = input_features.size(dim=0)
         i = torch.arange(self.nqueries, device=input_features.device)
@@ -170,19 +179,13 @@ class CrossAttentionDecoder(nn.Module):
 
     def forward(self, input_features, k = 0.8):
         input_features = F.normalize(input_features).flatten(2)
-        bs, _, hw = input_features.size()
+
         cluster_prototypes = self.get_initial_queries(input_features)
         outputs_mask = torch.einsum(
             "bqc,bcf->bqf", cluster_prototypes, input_features)  # f = hw
 
         # Get attention on top-k value
-        k = int(k * input_features.size(dim=2)) + 1
-        kth_values = torch.kthvalue(outputs_mask, k=k, keepdim=True)[
-            0].repeat(1, 1, hw)
-        attn_mask = ((outputs_mask - kth_values) < 0).bool()
-        new_attn_mask = torch.zeros_like(attn_mask, dtype=torch.float)
-        new_attn_mask.masked_fill_(attn_mask,  float("-inf"))
-        attn_mask = new_attn_mask
+        attn_mask = self.filter_topk_attention_mask(outputs_mask, k, 1)
 
         outputs_mask = F.softmax(outputs_mask + attn_mask, dim=2)
 
